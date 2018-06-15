@@ -1,0 +1,109 @@
+Vector_3D<double> Phong_Shader::
+Shade_Surface(const Ray& ray, const Object& intersection_object, const Vector_3D<double>& intersection_point, const Vector_3D<double>& same_side_normal) const
+-----------------------------------------------------------------------------------------------------------------
+
+For each light in the world
+	Seperately calculate the red, green, and blue values for the ambient, diffuse, and specular components.
+	The ambient value is found first.
+	If shadows are enabled find out if the shadow ray intersects with an object.
+		If so diffuse and specular are set to zero and a shadow flag is set.
+	If the shadow flag is not set
+		calculate the diffuse and specular.
+	set the color component to the sum of diffuse and specular and add this  plus the ambient to the overall value of the color
+	component.
+The final color has its red, green, and blue components set to the calculated red, green, and blue values.
+Return the color.
+=================================================================================================================
+Vector_3D<double> Reflective_Shader::
+Shade_Surface(const Ray& ray, const Object& intersection_object, const Vector_3D<double>& intersection_point, const Vector_3D<double>& same_side_normal) const
+-----------------------------------------------------------------------------------------------------------------
+
+Calculate the color of the intersection_point using the Phong Shading technique.
+If the recursion depth of the ray is less than the recursion depth limit
+	create the reflected ray, updating its recursion depth, and cast it using Cast_Ray to calculate the color
+	of the next intersected object.
+	Add this color to the color of the intersection_point.
+Return the final color.
+=================================================================================================================
+bool Sphere::
+Intersection(Ray& ray) const
+-----------------------------------------------------------------------------------------------------------------
+
+Checks if the ray intersects with the sphere.
+If it does check to see if the the contents of the ray need to be updated based on if the ray is semi_infinite
+or if the t_max of the ray is greater than the current t_max. Return true if there are any intersections and
+false if otherwise.
+=================================================================================================================
+Vector_3D<double> Sphere::
+Normal(const Vector_3D<double>& location) const
+-----------------------------------------------------------------------------------------------------------------
+
+Calculates the normal vector, more specifically the direction of the normal vector, at the point location.
+=================================================================================================================
+bool Plane::
+Intersection(Ray& ray) const
+-----------------------------------------------------------------------------------------------------------------
+
+Create a double denominator which is set to the value of Vector_3D<double>::Dot_Product(ray.direction, normal)
+where normal is the normal of the plane.
+If denominator is not zero, that means the ray and plane intersect.
+	Calculate the current value of t_max (cur_t_max) using the formula
+	Vector_3D<double>::Dot_Product((x1 - ray.endpoint), normal) / denominator where x1 is a point on the plane.
+	if cur_t_max is less than or equal to small_t
+		return false.
+	Next check if ray is semi_infinite.
+		If so update current_object, t_max, and semi_infinite of ray.
+	If it isn't
+		Update current_object and t_max of ray if t_max of ray is greater than cur_t_max.
+	Return true.
+Otherwise return false.
+=================================================================================================================
+Vector_3D<double> Camera::
+World_Position(const Vector_2D<int>& pixel_index)
+-----------------------------------------------------------------------------------------------------------------
+
+Create a Vector_3D<double> object result;
+Create a Vector_2D<double> object pixel_pos set to the result of pixel_grid.X() of the Film object film with
+pixel_index passed in as the argument.
+Set result to focal_point + (vertical_vector * pixel_pos.y) + (horizontal_vector * pixel_pos.x).
+Return the value of result.
+=================================================================================================================
+const Object* Render_World::
+Closest_Intersection(Ray& ray)
+-----------------------------------------------------------------------------------------------------------------
+
+Create a flag to indicate if there are intersections
+Go through each item in the vector<Object *> objects and for each element
+	set the intersection flag to true if the Intersection() function in the current element returns true.
+	The object ray will have the appropriate information set in Intersection().
+If intersections is true
+	return the Object* current_object in ray.
+Otherwise return 0.
+=================================================================================================================
+void Render_World::
+Render_Pixel(const Vector_2D<int>& pixel_index)
+-----------------------------------------------------------------------------------------------------------------
+
+Creates a Vector_3D<double> dir set to the result of camera.World_Position(pixel_index) - camera.position which will
+create a vector in the direction from the camera to the current pixel being looked at on the pixel grid.
+Create a Ray ray with endpoint at the position of the camera in the direction dir.
+Create an empty Ray dummy_root;
+Get the color of the pixel at the pixel_index using Cast_Ray(), passing in ray and dummy_root as arguments.
+Set the pixel color using Set_Pixel() in the Film object of camera.
+=================================================================================================================
+Vector_3D<double> Render_World::
+Cast_Ray(Ray& ray, const Ray& parent_ray)
+-----------------------------------------------------------------------------------------------------------------
+
+Initializes a Vector_3D<double> object color.
+Runs Closest_Intersection() function in order to find the closest object that Ray ray intersects with and assigns it
+to Object * closest. 
+If ray is not semi_infinite two new Vector_3D<double> objects are created, Vector_3D<double> 
+	intersection and Vector_3D<double> normal. The object intersection is set to the result of 
+	ray.endpoint + (ray.direction * ray.t_max); The object normal is assigned to the result of the Normal function	      of closest with intersection passed in as the argument. The return value Vector_3D<double> color is then
+	assigned to the result of the Shade_Surface() function of the Shader object of the Object * closest.
+Returns color.
+=================================================================================================================
+=================================================================================================================
+Known Bugs:
+The specular and shadows are less pronounced than the example images shown in the assignment specs

@@ -1,0 +1,139 @@
+========================
+Function implementations
+========================
+-------------------------------------------------------------------
+void BoundingBox(MGLint a, MGLint b, MGLint c, int & min, int& max)
+
+Compares the ints a, b, and c to the min and max values to see which of
+the values is the minimum and maximum respectively. 
+-------------------------------------------------------------
+MGLfloat getABG(int x, int y, int xb, int yb, int xc, int yc)
+
+returns the value of the following equation
+(yb - yc)*x + (xc - xb)*y + xb*yc - xc*yb
+------------------------------------------------------------
+mglReadPixels(MGLsize width, MGLsize height, MGLpixel *data)
+
+The z-buffer is initialized so all of the values contained infinity.
+For each triangle object the x, y, and z values for each of the
+    vertices was found and the viewport transformation was applied to the x and y values.
+From these values a bounding box was created using the BoundingBox function.
+    For each pixel in the bounding box the alpha, beta, and gamma values using the
+    getABG function.
+If alpha, beta, and gamma were not negative the z value of the current pixel was checked to see
+    if it was smaller than the corresponding value in the z-buffer.
+    If this was the case then the color at the current pixel in data was set.
+For each quad object the x, y, and z values for each vertex was found and the viewport
+    transformation was applied to the x and y values.
+Two triangles created from the points in the quad and each was rasterized using the method described
+    for reading triangle objects.
+--------------------------------
+void mglBegin(MGLpoly_mode mode)
+
+Sets a global variable MGLpoly_mode p_mode to the value of mode.
+Sets a running flag to true.
+-------------------------------------
+void ModelMultVertex(MGLfloat * vert)
+
+Multiplies the MGLfloat array vert, which contains a vertex matrix, by
+    the top of the model-view matrix stack.
+------------------------------------
+void ProjMultVertex(MGLfloat * vert)
+
+Multiplies the MGLfloat array vert, which contains a vertex matrix, by
+    the top of the Projection matrix stack.
+-------------
+void mglEnd()
+
+Sets a running flag to false.
+---------------------------------------
+void mglVertex2(MGLfloat x, MGLfloat y)
+
+Creates a new Coordinates object which stores the x,y, and z coordinates of a vertex as well
+    as its w and associated RGB color values.
+Sets the x, y, z, and w values to x, y, 0, and 1 respectively.
+Sets the RGB values to the RGB values of a global color variable.
+Apply the model-view transformations to the x,y,z, and w values using the ModelMultVertex function by
+    passing the values into the function as an MGLfloat array.
+Apply the projection matrix to the x,y,z, and w values using the ProjMultVertex function by passing the
+    values into the function as an MGLfloat array.
+If p_mode is set to MGL_TRIANGLES add the Coordinates object to the triangle object stack.
+If p_mode is set to MGL_Quads add the Coordinates object to the quad object stack.
+---------------------------------------------------
+void mglVertex3(MGLfloat x, MGLfloat y, MGLfloat z)
+
+Creates a new Coordinates object which stores the x,y, and z coordinates of a vertex as well
+    as its w and associated RGB color values.
+Sets the x, y, z, and w values to x, y, z, and 1 respectively.
+Sets the RGB values to the RGB values of a global color variable.
+Apply the model-view transformations to the x,y,z, and w values using the ModelMultVertex function by
+    passing the values into the function as an MGLfloat array.
+Apply the projection matrix to the x,y,z, and w values using the ProjMultVertex function by passing the
+    values into the function as an MGLfloat array.
+If p_mode is set to MGL_TRIANGLES add the Coordinates object to the triangle object stack.
+If p_mode is set to MGL_Quads add the Coordinates object to the quad object stack.
+---------------------------------------
+void mglMatrixMode(MGLmatrix_mode mode)
+
+Sets a global variable MGLmatrix_mode m_mode to the value of mode.
+--------------------
+void mglPushMatrix()
+
+Depending on the m_mode setting either the matrix vector stack or the projection vector stack has an empty MGLfloat vector
+    pushed back onto the end which is then filled with copies of the contents of the vector before it.
+-------------------
+void mglPopMatrix()
+
+Depending on the m_mode setting either the matrix vector stack or the projection vector stack has the last
+    vector in the stack popped off.
+----------------------
+void mglLoadIdentity()
+
+Depending on the m_mode setting either the matrix vector stack or the projection vector stack has a vector
+    corresponding to the identity matrix pushed back onto the end after the the last element was popped off.
+--------------------
+void mglLoadMatrix()
+
+Did not implement.
+------------------------------------------
+void mglMultMatrix(const MGLfloat *matrix)
+
+The current matrix, specified by the m_mode flag, is multiplied by an MGLfloat array that stores a matrix in 
+    column-major order.
+-----------------------------------------------------
+void mglTranslate(MGLfloat x, MGLfloat y, MGLfloat z)
+
+From the given data create an MGLfloat array that stores a translation matrix in column-major order.
+    This array is then passed to mglMultMatrix.
+------------------------------------------------------------------
+void mglRotate(MGLfloat angle, MGLfloat x, MGLfloat y, MGLfloat z)
+
+From the given data create an MGLfloat array that stores a rotation matrix based off of the openGL implementation
+    in column-major order. This array is then passed to mglMultMatrix.
+-------------------------------------------------
+void mglScale(MGLfloat x, MGLfloat y, MGLfloat z)
+
+From the given data create an MGLfloat array that stores a scale matrix in column-major order.
+    This array is then passed to mglMultMatrix.
+-------------------------------------------------------------------------------------------------------
+void Frustum(MGLfloat left, MGLfloat right, MGLfloat bottom, MGLfloat top, MGLfloat near, MGLfloat far)
+
+From the given data create an MGLfloat array that stores a frustum matrix based off of the openGL implementation
+    in column-major order. This array is then passed to mglMultMatrix.
+-----------------------------------------------------------------------------------------------------
+void Ortho(MGLfloat left, MGLfloat right, MGLfloat bottom, MGLfloat top, MGLfloat near, MGLfloat far)
+
+From the given data create an MGLfloat array that stores an orthographic projection matrix based 
+    off of the openGL implementation in column-major order. This array is then passed to mglMultMatrix.
+-------------------------------------------------------
+void mglColor(MGLbyte red, MGLbyte green, MGLbyte blue)
+
+Set the red, green, and blue values of a global variable COLOR by the values of red, green, and blue repectively.
+
+===============
+Bugs and Errors
+===============
+
+For the provided case 2 the line dividing the two triangles of the quad is visible.
+
+For the provided case 5 there are some pixels that do not match the color of the quad that the pixel is on.
